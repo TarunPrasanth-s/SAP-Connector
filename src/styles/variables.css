@@ -1,0 +1,32 @@
+:root {
+  /* Brand blue */
+  --color-primary-blue: hsl(217, 91%, 60%);
+  --color-primary-blue-hover: hsl(217, 91%, 55%);
+  --color-primary-blue-light: hsl(217, 91%, 95%);
+
+  /* Surfaces */
+  --color-surface: #ffffff;
+  --color-background: #f4f6f9;
+  --color-border: #e5e7eb;
+  --color-border-light: #f0f2f5;
+
+  /* Text */
+  --color-text-primary: #111827;
+  --color-text-secondary: #6b7280;
+  --color-text-muted: #9ca3af;
+
+  /* Status */
+  --color-success: #22c55e;
+  --color-danger: #ef4444;
+  --color-warning: #f59e0b;
+
+  /* Layout */
+  --sidebar-width: 4.5rem;
+  --topbar-height: 4rem;
+
+  /* Radii */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1.25rem;
+}
