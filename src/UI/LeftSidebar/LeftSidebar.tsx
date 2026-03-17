@@ -1,4 +1,4 @@
-import { Plus, LayoutDashboard, LayoutGrid, Users, Settings } from "lucide-react";
+import { Plus, LayoutDashboard, LayoutGrid, Users } from "lucide-react";
 import { type TabId } from "@/constants/sidebarConfig";
 import styles from "./LeftSidebar.module.css";
 
@@ -33,14 +33,6 @@ export function LeftSidebar({ activeTab, onTabChange }: LeftSidebarProps) {
           <Icon size={21} />
         </button>
       ))}
-
-      <div style={{ flex: 1 }} />
-
-      <div className={styles.divider} />
-
-      <button className={styles.navBtn} data-tooltip="Settings" aria-label="Settings">
-        <Settings size={21} />
-      </button>
     </aside>
   );
 }

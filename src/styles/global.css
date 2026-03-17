@@ -10,6 +10,7 @@ body {
   background: var(--color-background);
   color: var(--color-text-primary);
   line-height: 1.6;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 ::-webkit-scrollbar { width: 7px; height: 7px; }
