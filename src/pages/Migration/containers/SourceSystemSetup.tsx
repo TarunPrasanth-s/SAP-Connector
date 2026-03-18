@@ -1,5 +1,9 @@
+import { useState } from "react";
+import { useDispatch } from "react-redux";
 import { useSystemSetup } from "@/hooks/useSystemSetup";
 import { SystemSetupView } from "../views/SystemSetupView";
+import { saveSystem } from "@/state/connectionsSlice";
+import { toast } from "sonner";
 
 const SOURCE_BACKEND_TYPES = [
   "Identity Authentication",
@@ -23,17 +27,36 @@ const SOURCE_BACKEND_TYPES = [
 
 export function SourceSystemSetup() {
   const setup = useSystemSetup();
+  const dispatch = useDispatch();
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSave = () => {
+    setIsSaving(true);
+    toast.loading("Saving configuration...", { id: "save-config" });
+
+    setTimeout(() => {
+      dispatch(saveSystem({
+        role: "source",
+        backendType: setup.backendType,
+        deploymentMode: setup.isCloud ? "cloud" : "on-premise",
+      }));
+      setIsSaving(false);
+      toast.success("Source system configured successfully", { id: "save-config" });
+      setup.setSetupDone(true);
+    }, 1500);
+  };
 
   return (
     <SystemSetupView
       title="Source System Configuration"
-      saveLabel="Save Source System"
+      saveLabel={isSaving ? "Saving..." : "Save Configuration"}
       backendTypes={SOURCE_BACKEND_TYPES}
-      cloudUrlPlaceholder="https://<account>.successfactors.com"
-      cloudTitle="HTTP / HTTPS Connection"
-      cloudDescription="Configure the connection details for your cloud SAP source system."
+      cloudUrlPlaceholder="https://<tenant>.sapsf.com"
+      cloudTitle="Cloud Connection Details"
+      cloudDescription="Configure the API endpoint for your source system."
       showProxyType={false}
-      onSave={() => {}}
+      onSave={handleSave}
+      isSaving={isSaving}
       {...setup}
     />
   );

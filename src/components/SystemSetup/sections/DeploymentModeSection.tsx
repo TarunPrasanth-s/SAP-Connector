@@ -1,48 +1,78 @@
+import { CheckCircle2, Cloud, Server } from "lucide-react";
 import { SectionHeader } from "../SectionHeader";
-import styles from "../SystemSetup.module.css";
 
 interface DeploymentModeSectionProps {
   isCloud: boolean;
+  onSelect: (isCloud: boolean) => void;
 }
 
-export function DeploymentModeSection({ isCloud }: DeploymentModeSectionProps) {
+export function DeploymentModeSection({ isCloud, onSelect }: DeploymentModeSectionProps) {
   return (
-    <div className={styles.section}>
+    <div className="p-6">
       <SectionHeader title="Deployment Mode" />
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          borderRadius: "var(--radius-lg)",
-          border: "1px solid hsl(217, 91%, 82%)",
-          background: "var(--color-primary-blue-light)",
-          padding: "0.75rem 1rem",
-        }}
-      >
-        <div>
-          <p style={{ fontSize: "1rem", fontWeight: 700, color: "hsl(217, 91%, 35%)", margin: 0 }}>
-            {isCloud ? "Cloud" : "On-Premises"}
-          </p>
-          <p style={{ fontSize: "0.875rem", color: "hsl(217, 60%, 50%)", marginTop: "0.125rem" }}>
-            {isCloud
-              ? "Direct HTTP connection — no Cloud Connector required"
-              : "Cloud Connector required to tunnel into your SAP backend"}
-          </p>
-        </div>
-        <span
-          style={{
-            fontSize: "0.875rem",
-            fontWeight: 600,
-            padding: "0.25rem 0.625rem",
-            borderRadius: "9999px",
-            background: "var(--color-primary-blue)",
-            color: "#fff",
-            flexShrink: 0,
-          }}
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+        {/* On-Premises Option */}
+        <div
+          onClick={() => onSelect(false)}
+          className={`flex flex-col gap-3 rounded-xl border p-5 transition-all duration-300 relative overflow-hidden group hover:-translate-y-0.5 hover:shadow-md cursor-pointer
+            ${!isCloud 
+              ? "border-blue-500 bg-blue-500/5 ring-1 ring-blue-500/50" 
+              : "border-border bg-card hover:border-blue-500/30"}
+          `}
         >
-          {isCloud ? "HTTP / HTTPS" : "RFC / HTTP"}
-        </span>
+          <div className="flex items-center justify-between">
+            <div className={`p-2 rounded-lg ${!isCloud ? "bg-blue-500/20 text-blue-600 dark:text-blue-400" : "bg-muted text-muted-foreground group-hover:bg-blue-500/10 group-hover:text-blue-500 transition-colors"}`}>
+              <Server size={24} strokeWidth={2} />
+            </div>
+            {!isCloud && <CheckCircle2 className="text-blue-500 h-6 w-6 animate-in zoom-in-50 duration-200" />}
+          </div>
+          <div>
+            <p className={`text-base font-bold m-0 ${!isCloud ? "text-blue-600 dark:text-blue-400" : "text-foreground group-hover:text-blue-500 transition-colors"}`}>
+              On-Premises
+            </p>
+            <p className="text-sm mt-1 text-muted-foreground leading-relaxed">
+              Cloud Connector required to tunnel securely into your SAP backend behind the corporate firewall.
+            </p>
+          </div>
+          <span className={`self-start text-xs font-semibold px-2 py-1 rounded shrink-0 mt-auto
+              ${!isCloud ? "bg-blue-500 text-white" : "bg-muted text-muted-foreground group-hover:bg-blue-500/10 group-hover:text-blue-500 transition-colors"}
+            `}
+          >
+            RFC / HTTP
+          </span>
+        </div>
+
+        {/* Cloud Option */}
+        <div
+          onClick={() => onSelect(true)}
+          className={`flex flex-col gap-3 rounded-xl border p-5 transition-all duration-300 relative overflow-hidden group hover:-translate-y-0.5 hover:shadow-md cursor-pointer
+            ${isCloud 
+              ? "border-indigo-500 bg-indigo-500/5 ring-1 ring-indigo-500/50" 
+              : "border-border bg-card hover:border-indigo-500/30"}
+          `}
+        >
+          <div className="flex items-center justify-between">
+            <div className={`p-2 rounded-lg ${isCloud ? "bg-indigo-500/20 text-indigo-600 dark:text-indigo-400" : "bg-muted text-muted-foreground group-hover:bg-indigo-500/10 group-hover:text-indigo-500 transition-colors"}`}>
+              <Cloud size={24} strokeWidth={2} />
+            </div>
+            {isCloud && <CheckCircle2 className="text-indigo-500 h-6 w-6 animate-in zoom-in-50 duration-200" />}
+          </div>
+          <div>
+            <p className={`text-base font-bold m-0 ${isCloud ? "text-indigo-600 dark:text-indigo-400" : "text-foreground group-hover:text-indigo-500 transition-colors"}`}>
+              Cloud (BTP)
+            </p>
+            <p className="text-sm mt-1 text-muted-foreground leading-relaxed">
+              Direct HTTP connection — no Cloud Connector required. Designed for public internet endpoints.
+            </p>
+          </div>
+          <span className={`self-start text-xs font-semibold px-2 py-1 rounded shrink-0 mt-auto
+              ${isCloud ? "bg-indigo-500 text-white" : "bg-muted text-muted-foreground group-hover:bg-indigo-500/10 group-hover:text-indigo-500 transition-colors"}
+            `}
+          >
+            HTTP / HTTPS
+          </span>
+        </div>
       </div>
     </div>
   );

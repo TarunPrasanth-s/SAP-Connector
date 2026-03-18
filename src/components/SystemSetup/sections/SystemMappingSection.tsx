@@ -2,7 +2,6 @@ import { Field } from "../Field";
 import { Dropdown } from "@/UI/Dropdown/Dropdown";
 import { Label } from "@/UI/Label/Label";
 import { SectionHeader } from "../SectionHeader";
-import styles from "../SystemSetup.module.css";
 
 interface SystemMappingSectionProps {
   backendType: string;
@@ -10,13 +9,13 @@ interface SystemMappingSectionProps {
 
 export function SystemMappingSection({ backendType }: SystemMappingSectionProps) {
   return (
-    <div className={styles.section}>
+    <div className="p-6">
       <SectionHeader title="System Mapping" description="Define the virtual-to-internal host mapping for your SAP backend." />
-      <div className={styles.grid2}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Dropdown label="Protocol" required options={["RFC", "HTTP"]} />
         <div>
           <Label>Back-end Type</Label>
-          <div className={styles.readonlyField}>{backendType}</div>
+          <div className="w-full border border-border rounded-md px-3.5 py-2.5 text-base bg-muted text-muted-foreground">{backendType}</div>
         </div>
         <Field label="Virtual Host" required placeholder="sap.virtual.cloud" hint="Virtual hostname exposed to BTP" />
         <Field label="Virtual Port" required placeholder="e.g. 443" hint="Virtual port exposed to BTP" />
@@ -27,18 +26,20 @@ export function SystemMappingSection({ backendType }: SystemMappingSectionProps)
         <Dropdown label="Principal Type" required options={["None", "Kerberos"]} />
         <Field label="SNC Partner Name" placeholder="p:CN=SAP..." hint="Optional — required when Principal Type is Kerberos" />
         <Field label="Host in Request Header" placeholder="Use Virtual Host" hint="Optional override" />
-        <div className={styles.colSpan2}>
+        <div className="col-span-1 md:col-span-2">
           <Label>System Certificate for Logon</Label>
-          <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.875rem", color: "#4b5563" }}>
-            <input type="checkbox" style={{ borderRadius: "0.25rem", border: "1px solid #d1d5db" }} />
+          <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer mt-1">
+            <input type="checkbox" className="rounded border-border text-primary cursor-pointer" />
             Enable certificate-based logon
           </label>
         </div>
-        <div className={styles.colSpan2}>
+        <div className="col-span-1 md:col-span-2">
           <Label>Description</Label>
           <textarea
             placeholder="Optional description for this system mapping"
-            className={styles.textarea}
+            className="w-full border border-border rounded-md px-3.5 py-2.5 text-base bg-background text-foreground outline-none resize-none h-24 transition-colors duration-150
+            hover:border-muted-foreground/50
+            focus:border-primary focus:ring-2 focus:ring-primary/20"
           />
         </div>
       </div>

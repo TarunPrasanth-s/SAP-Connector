@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import styles from "./CardTile.module.css";
 
 interface CardTileProps {
   children: ReactNode;
@@ -7,5 +6,5 @@ interface CardTileProps {
 }
 
 export function CardTile({ children, className = "" }: CardTileProps) {
-  return <div className={`${styles.card} ${className}`}>{children}</div>;
+  return <div className={`bg-card border border-border rounded-xl shadow-sm ${className}`}>{children}</div>;
 }

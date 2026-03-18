@@ -1,22 +1,25 @@
 import type { ReactNode } from "react";
 import { TopBar } from "@/UI/TopBar/TopBar";
 import { LeftSidebar } from "@/UI/LeftSidebar/LeftSidebar";
-import { useSidebar } from "@/hooks/useSidebar";
-import styles from "./layout.module.css";
+import { RightSidebar } from "@/UI/RightSidebar/RightSidebar";
+import { useAppState } from "@/state/AppContext";
 
 interface AppLayoutProps {
   children: ReactNode;
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
-  const { activeTab, setActiveTab } = useSidebar();
+  const { isHelpSidebarOpen } = useAppState();
 
   return (
-    <div className={styles.shell}>
+    <div className="flex flex-col min-h-screen bg-background text-foreground">
       <TopBar />
-      <div className={styles.body}>
-        <LeftSidebar activeTab={activeTab} onTabChange={setActiveTab} />
-        <main className={styles.main}>{children}</main>
+      <div className="flex flex-1 overflow-hidden">
+        <LeftSidebar />
+        <main className="flex-1 overflow-y-auto min-h-[calc(100vh-3.5rem)] bg-muted/10 relative">
+          {children}
+        </main>
+        {isHelpSidebarOpen && <RightSidebar />}
       </div>
     </div>
   );

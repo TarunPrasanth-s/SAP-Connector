@@ -23,13 +23,20 @@ export function useSystemSetup() {
   const [backendType, setBackendType] = useState<string>("");
   const [hasCC, setHasCC] = useState<CCStatus>(null);
   const [setupDone, setSetupDone] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
+  
+  // Track explicit user selection, falling back to computed type
+  const [userCloudOverride, setUserCloudOverride] = useState<boolean | null>(null);
 
-  const isCloud = backendType ? CLOUD_TYPES.has(backendType) : false;
+  const defaultIsCloud = backendType ? CLOUD_TYPES.has(backendType) : false;
+  const isCloud = userCloudOverride !== null ? userCloudOverride : defaultIsCloud;
   const isOnPrem = backendType ? !isCloud : false;
 
   useEffect(() => {
     setHasCC(null);
     setSetupDone(false);
+    setCurrentStep(0); // Reset step when backend changes
+    setUserCloudOverride(null); // Reset explicit override on backend change
   }, [backendType]);
 
   const showCCQuestion = isOnPrem;
@@ -41,6 +48,27 @@ export function useSystemSetup() {
   const showCloudForm = isCloud;
   const showSave = showMapping || showCloudForm;
 
+  const nextStep = () => setCurrentStep((prev) => prev + 1);
+  const prevStep = () => setCurrentStep((prev) => Math.max(0, prev - 1));
+
+  let canProceed = false;
+  let totalSteps = isCloud ? 3 : 4;
+
+  if (currentStep === 0) {
+    canProceed = !!backendType;
+  } else if (currentStep === 1) {
+    // Deployment mode is static display based on backend type
+    canProceed = true; 
+  } else if (currentStep === 2) {
+    if (isCloud) {
+       canProceed = true; // Wait, for cloud, step 2 is CloudForm, it has its own validation but we'll let proceed save.
+    } else {
+       canProceed = hasCC !== null;
+    }
+  } else if (currentStep === 3) {
+    canProceed = true;
+  }
+
   return {
     backendType,
     setBackendType,
@@ -48,7 +76,13 @@ export function useSystemSetup() {
     setHasCC,
     setupDone,
     setSetupDone,
+    currentStep,
+    nextStep,
+    prevStep,
+    canProceed,
+    totalSteps,
     isCloud,
+    setIsCloud: setUserCloudOverride, // Expose setter to the view
     isOnPrem,
     showCCQuestion,
     showExistingCC,

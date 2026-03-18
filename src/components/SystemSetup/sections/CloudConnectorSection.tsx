@@ -1,6 +1,5 @@
 import type { CCStatus } from "@/types/common";
 import { SectionHeader } from "../SectionHeader";
-import styles from "../SystemSetup.module.css";
 
 interface CloudConnectorSectionProps {
   hasCC: CCStatus;
@@ -14,35 +13,26 @@ const OPTIONS = [
 
 export function CloudConnectorSection({ hasCC, onSelect }: CloudConnectorSectionProps) {
   return (
-    <div className={styles.section}>
+    <div className="p-6">
       <SectionHeader
         title="Cloud Connector"
         description="A Cloud Connector instance is required to route traffic from SAP BTP to your on-premises backend."
       />
-      <p style={{ fontSize: "0.875rem", color: "var(--color-text-muted)", marginBottom: "0.75rem" }}>
+      <p className="text-sm text-muted-foreground mb-3">
         Is Cloud Connector already installed and running on this machine?
       </p>
-      <div style={{ display: "flex", gap: "0.75rem" }}>
+      <div className="flex gap-3">
         {OPTIONS.map((opt) => {
           const isSelected = hasCC === opt.val;
           return (
             <button
               key={opt.val}
               onClick={() => onSelect(opt.val)}
-              style={{
-                flex: 1,
-                padding: "0.625rem",
-                borderRadius: "var(--radius-md)",
-                fontSize: "1rem",
-                fontWeight: 600,
-                cursor: "pointer",
-                transition: "all 0.15s",
-                border: isSelected
-                  ? "1px solid var(--color-primary-blue)"
-                  : "1px solid var(--color-border)",
-                background: isSelected ? "var(--color-primary-blue-light)" : "var(--color-surface)",
-                color: isSelected ? "var(--color-primary-blue)" : "var(--color-text-secondary)",
-              }}
+              className={`flex-1 p-2.5 rounded-md text-base font-semibold cursor-pointer transition-all duration-150 border
+                ${isSelected 
+                  ? "border-primary bg-primary/10 text-primary" 
+                  : "border-border bg-card text-muted-foreground hover:bg-accent/50"
+                }`}
             >
               {opt.label}
             </button>

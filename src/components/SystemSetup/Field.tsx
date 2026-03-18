@@ -1,5 +1,4 @@
 import { Label } from "@/UI/Label/Label";
-import styles from "./SystemSetup.module.css";
 
 interface FieldProps {
   label?: string;
@@ -23,9 +22,14 @@ export function Field({ label, placeholder, required, hint, type = "text", value
         value={onChange ? value : undefined}
         disabled={disabled}
         onChange={(e) => onChange?.(e.target.value)}
-        className={`${styles.input} ${disabled ? styles.disabled : ""}`}
+        className={`w-full border border-border rounded-md px-3.5 py-2.5 text-base bg-background text-foreground outline-none transition-all duration-200
+          placeholder:text-muted-foreground
+          hover:border-primary/40
+          focus:border-primary focus:ring-4 focus:ring-primary/10
+          ${disabled ? "text-muted-foreground cursor-not-allowed bg-muted opacity-80" : ""}
+        `}
       />
-      {hint && <p className={styles.hint}>{hint}</p>}
+      {hint && <p className="text-xs text-muted-foreground mt-1">{hint}</p>}
     </div>
   );
 }

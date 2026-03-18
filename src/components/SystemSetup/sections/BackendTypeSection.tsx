@@ -1,6 +1,5 @@
 import { Dropdown } from "@/UI/Dropdown/Dropdown";
 import { SectionHeader } from "../SectionHeader";
-import styles from "../SystemSetup.module.css";
 
 interface BackendTypeSectionProps {
   value: string;
@@ -11,7 +10,7 @@ interface BackendTypeSectionProps {
 
 export function BackendTypeSection({ value, onChange, options, description }: BackendTypeSectionProps) {
   return (
-    <div className={styles.section}>
+    <div className="p-6">
       <SectionHeader
         title="Back-end Type"
         description={description ?? "Select the type of SAP system you are connecting to."}

@@ -14,18 +14,17 @@ import { SetupPanel } from "@/components/SystemSetup/SetupPanel";
 import { Notice } from "@/components/SystemSetup/Notice";
 import { SectionHeader } from "@/components/SystemSetup/SectionHeader";
 import { Field } from "@/components/SystemSetup/Field";
-import styles from "@/components/SystemSetup/SystemSetup.module.css";
 import { LABELS } from "@/constants/labels";
 
 function ProxyMappingSection({ backendType }: { backendType: string }) {
   return (
-    <div className={styles.section}>
+    <div className="p-6">
       <SectionHeader title="Proxy Connection Details" description="Define the virtual-to-internal mapping. This system will be exposed as a SCIM 2.0 endpoint." />
-      <div className={styles.grid2}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Dropdown label="Protocol" required options={["RFC", "HTTP"]} />
         <div>
           <Label>Back-end Type</Label>
-          <div className={styles.readonlyField}>{backendType}</div>
+          <div className="w-full border border-border rounded-md px-3.5 py-2.5 text-base bg-muted text-muted-foreground">{backendType}</div>
         </div>
         <Field label="Virtual Host" required placeholder="sap.virtual.cloud" hint="Virtual hostname exposed to BTP" />
         <Field label="Virtual Port" required placeholder="e.g. 443" />
@@ -35,9 +34,12 @@ function ProxyMappingSection({ backendType }: { backendType: string }) {
         <Field label="System ID" required placeholder="e.g. HHJ" hint="3-character SAP System ID" />
         <Dropdown label="Principal Type" required options={["None", "Kerberos"]} />
         <Field label="SNC Partner Name" placeholder="p:CN=SAP..." hint="Optional — required when Principal Type is Kerberos" />
-        <div className={styles.colSpan2}>
+        <div className="col-span-1 md:col-span-2">
           <Label>Description</Label>
-          <textarea placeholder="Optional description for this proxy system" className={styles.textarea} />
+          <textarea 
+            placeholder="Optional description for this proxy system" 
+            className="w-full border border-border rounded-md px-3.5 py-2.5 text-base bg-background text-foreground outline-none resize-none h-24 transition-colors duration-150 hover:border-muted-foreground/50 focus:border-primary focus:ring-2 focus:ring-primary/20" 
+          />
         </div>
       </div>
     </div>
@@ -57,6 +59,8 @@ interface ProxySystemSetupViewProps {
   setupDone: boolean;
   setSetupDone: (v: boolean) => void;
   isCloud: boolean;
+  setIsCloud: (v: boolean) => void;
+  isOnPrem: boolean;
   showCCQuestion: boolean;
   showExistingCC: boolean;
   showAutoSetup: boolean;
@@ -65,7 +69,15 @@ interface ProxySystemSetupViewProps {
   showMapping: boolean;
   showCloudForm: boolean;
   showSave: boolean;
+  currentStep: number;
+  nextStep: () => void;
+  prevStep: () => void;
+  canProceed: boolean;
+  totalSteps: number;
+  isSaving?: boolean;
 }
+
+import { Stepper } from "@/components/ui/stepper";
 
 export function ProxySystemSetupView({
   backendTypes,
@@ -77,8 +89,11 @@ export function ProxySystemSetupView({
   setBackendType,
   hasCC,
   setHasCC,
+  setupDone,
   setSetupDone,
   isCloud,
+  setIsCloud,
+  isOnPrem,
   showCCQuestion,
   showExistingCC,
   showAutoSetup,
@@ -87,75 +102,187 @@ export function ProxySystemSetupView({
   showMapping,
   showCloudForm,
   showSave,
+  currentStep,
+  nextStep,
+  prevStep,
+  canProceed,
+  totalSteps,
 }: ProxySystemSetupViewProps) {
-  const divider = { borderTop: "1px solid #f3f4f6" };
+  
+  const cloudSteps = [
+    { title: "Environment", description: "Select backend system" },
+    { title: "Deployment", description: "Cloud or On-Premise" },
+    { title: "Proxy Identity", description: "Connection & Scim URL" }
+  ];
+
+  const onPremSteps = [
+    { title: "Environment", description: "Select backend system" },
+    { title: "Deployment", description: "Cloud or On-Premise" },
+    { title: "Connectivity", description: "Cloud Connector" },
+    { title: "Proxy Identity", description: "Mapping & Scim URL" }
+  ];
+
+  const steps = isCloud ? cloudSteps : (isOnPrem ? onPremSteps : [{title: "Environment", description: "Select backend system"}]);
+
+  // Adjust canProceed for proxy final step (must have a system name)
+  const isFinalStep = currentStep === totalSteps - 1;
+  const isProceedable = canProceed && (!isFinalStep || systemName.trim() !== "");
 
   return (
-    <div style={{ minHeight: "100%", background: "var(--color-background)", display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "2.5rem 2rem" }}>
-      <div style={{ width: "100%", maxWidth: "44rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
-        <div style={{ marginBottom: "1.5rem", textAlign: "center" }}>
-          <h1 style={{ fontSize: "1.25rem", fontWeight: 700, color: "#111827", margin: 0 }}>Proxy System Configuration</h1>
+    <div className="min-h-full bg-background flex flex-col items-center justify-start py-10 px-8">
+      <div className="w-full max-w-3xl flex flex-col gap-6">
+        <div className="mb-2 text-center">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground m-0">Proxy System Configuration</h1>
         </div>
 
         <Notice type="info">
           A proxy system exposes your backend as a <strong>SCIM 2.0 endpoint</strong>, allowing external identity managers (e.g. SAP Identity Management) to read and write users without a direct connection.
         </Notice>
 
-        <CardTile>
-          <BackendTypeSection value={backendType} onChange={setBackendType} options={backendTypes} description="Select the type of SAP system to expose as a proxy." />
+        {backendType && steps.length > 1 && (
+          <div className="w-full px-4 mb-2">
+            <Stepper activeStep={currentStep} steps={steps} />
+          </div>
+        )}
 
-          <div style={divider}><DeploymentModeSection isCloud={isCloud} /></div>
+        <CardTile className="bg-card border border-border shadow-md rounded-xl overflow-hidden shadow-sm">
+          <div className="divide-y divide-border">
+            
+            {/* STEP 0: Backend Type */}
+            {currentStep === 0 && (
+               <BackendTypeSection value={backendType} onChange={setBackendType} options={backendTypes} description="Select the type of SAP system to expose as a proxy." />
+            )}
 
-          {showCCQuestion && <div style={divider}><CloudConnectorSection hasCC={hasCC} onSelect={setHasCC} /></div>}
-          {showExistingCC && <div style={divider}><ExistingCCSection /></div>}
+            {/* STEP 1: Deployment Mode */}
+            {currentStep === 1 && (
+              <DeploymentModeSection isCloud={isCloud} onSelect={setIsCloud} />
+            )}
 
-          {showAutoSetup && (
-            <div style={divider}>
-              <div className={styles.section}>
-                <SectionHeader title="Automated Setup" description="Download and run the batch script. It installs JDK, extracts Cloud Connector, and starts it fully automatically." />
-                <SetupPanel onComplete={() => setSetupDone(true)} />
+            {/* STEP 2: Connectivity (Cloud Form or Cloud Connector) */}
+            {currentStep === 2 && (
+              <div className="flex flex-col">
+                {isCloud && showCloudForm && (
+                  <>
+                    <CloudFormSection
+                      title="HTTP / HTTPS Connection"
+                      description="Configure the connection for your cloud SAP system to expose as a proxy."
+                      showProxyType={true}
+                      urlPlaceholder="https://<account>.workzone.ondemand.com"
+                    />
+                    {showSave && (
+                      <div className="border-t border-border p-6">
+                        <SectionHeader title="Proxy System Identity" description="Give this proxy a unique name. A SCIM 2.0 endpoint URL will be generated for use by external identity managers." />
+                        <div className="flex flex-col gap-4">
+                          <Field label="Proxy System Name" required placeholder="e.g. SAP-ABAP-Proxy" value={systemName} onChange={onSystemNameChange} hint="Unique identifier for this proxy system" />
+                          <div>
+                            <Label>Generated SCIM 2.0 Proxy URL</Label>
+                            <div className="border border-border rounded-lg px-3 py-2.5 text-xs bg-muted text-muted-foreground font-mono break-all mt-1">
+                              {proxyUrl}
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">Share this URL with your external identity manager</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {isOnPrem && (
+                  <>
+                    {showCCQuestion && (
+                      <CloudConnectorSection hasCC={hasCC} onSelect={setHasCC} />
+                    )}
+                    
+                    {showExistingCC && (
+                      <div className="border-t border-border">
+                        <ExistingCCSection />
+                      </div>
+                    )}
+
+                    {showAutoSetup && (
+                      <div className="border-t border-border p-6">
+                        <SectionHeader title="Automated Setup" description="Download and run the batch script. It installs JDK, extracts Cloud Connector, and starts it fully automatically." />
+                        <SetupPanel onComplete={() => setSetupDone(true)} />
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
-            </div>
-          )}
+            )}
 
-          {showChangePwd && <div style={divider}><ChangePasswordSection /></div>}
-          {showBTPFields && <div style={divider}><BTPSubaccountSection /></div>}
-          {showMapping && <div style={divider}><ProxyMappingSection backendType={backendType} /></div>}
-
-          {showCloudForm && (
-            <div style={divider}>
-              <CloudFormSection
-                title="HTTP / HTTPS Connection"
-                description="Configure the connection for your cloud SAP system to expose as a proxy."
-                showProxyType={true}
-                urlPlaceholder="https://<account>.workzone.ondemand.com"
-              />
-            </div>
-          )}
-
-          {showSave && (
-            <div style={divider}>
-              <div className={styles.section}>
-                <SectionHeader title="Proxy System Identity" description="Give this proxy a unique name. A SCIM 2.0 endpoint URL will be generated for use by external identity managers." />
-                <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-                  <Field label="Proxy System Name" required placeholder="e.g. SAP-ABAP-Proxy" value={systemName} onChange={onSystemNameChange} hint="Unique identifier for this proxy system" />
-                  <div>
-                    <Label>Generated SCIM 2.0 Proxy URL</Label>
-                    <div style={{ border: "1px solid #e5e7eb", borderRadius: "0.5rem", padding: "0.625rem 0.75rem", fontSize: "0.75rem", background: "#f9fafb", color: "#6b7280", fontFamily: "monospace", wordBreak: "break-all" }}>
-                      {proxyUrl}
-                    </div>
-                    <p style={{ fontSize: "0.75rem", color: "#9ca3af", marginTop: "0.25rem" }}>Share this URL with your external identity manager</p>
+            {/* STEP 3: On-Premise specific configuration */}
+            {currentStep === 3 && isOnPrem && (
+              <div className="flex flex-col">
+                {showChangePwd && (
+                  <ChangePasswordSection />
+                )}
+                
+                {showBTPFields && (
+                  <div className="border-t border-border">
+                    <BTPSubaccountSection />
                   </div>
-                </div>
+                )}
+                
+                {showMapping && (
+                  <div className="border-t border-border">
+                    <ProxyMappingSection backendType={backendType} />
+                  </div>
+                )}
+                
+                {showSave && (
+                  <div className="border-t border-border flex flex-col pt-0">
+                    <div className="p-6">
+                      <SectionHeader title="Proxy System Identity" description="Give this proxy a unique name. A SCIM 2.0 endpoint URL will be generated for use by external identity managers." />
+                      <div className="flex flex-col gap-4">
+                        <Field label="Proxy System Name" required placeholder="e.g. SAP-ABAP-Proxy" value={systemName} onChange={onSystemNameChange} hint="Unique identifier for this proxy system" />
+                        <div>
+                          <Label>Generated SCIM 2.0 Proxy URL</Label>
+                          <div className="border border-border rounded-lg px-3 py-2.5 text-xs bg-muted text-muted-foreground font-mono break-all mt-1">
+                            {proxyUrl}
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1">Share this URL with your external identity manager</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
-              <div style={{ padding: "0 1.5rem 1.5rem" }}>
-                <Button fullWidth onClick={onSave}>{LABELS.saveProxy}</Button>
-              </div>
+            )}
+
+            {/* Navigation Buttons */}
+            <div className="bg-muted/30 border-t border-border p-6 flex justify-between gap-4 items-center">
+              <Button 
+                variant="outline" 
+                onClick={prevStep} 
+                disabled={currentStep === 0}
+                className="w-32"
+              >
+                Back
+              </Button>
+
+              {isFinalStep ? (
+                <Button 
+                  onClick={onSave} 
+                  disabled={!isProceedable}
+                  className="w-32"
+                >
+                  {LABELS.saveProxy}
+                </Button>
+              ) : (
+                <Button 
+                  onClick={nextStep} 
+                  disabled={!isProceedable}
+                  className="w-32"
+                >
+                  Next
+                </Button>
+              )}
             </div>
-          )}
+
+          </div>
         </CardTile>
 
-        <p style={{ textAlign: "center", fontSize: "0.75rem", color: "#9ca3af", paddingBottom: "1rem" }}>{LABELS.footer}</p>
+        <p className="text-center text-xs text-muted-foreground pb-4 mt-2">{LABELS.footer}</p>
       </div>
     </div>
   );

@@ -1,7 +1,6 @@
 import { Field } from "../Field";
 import { Dropdown } from "@/UI/Dropdown/Dropdown";
 import { SectionHeader } from "../SectionHeader";
-import styles from "../SystemSetup.module.css";
 
 interface CloudFormSectionProps {
   title?: string;
@@ -17,10 +16,10 @@ export function CloudFormSection({
   urlPlaceholder = "https://<account>.workzone.ondemand.com",
 }: CloudFormSectionProps) {
   return (
-    <div className={styles.section}>
+    <div className="p-6">
       <SectionHeader title={title} description={description} />
-      <div className={styles.grid2}>
-        <div className={styles.colSpan2}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="col-span-1 md:col-span-2">
           <Field label="URL" required placeholder={urlPlaceholder} hint="Your SAP cloud system endpoint URL" />
         </div>
         <Dropdown label="Type" required options={["HTTP", "HTTPS"]} hint="Use HTTPS for secure connections (recommended)" />

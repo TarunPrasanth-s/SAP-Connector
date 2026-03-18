@@ -1,5 +1,3 @@
-import styles from "./SystemSetup.module.css";
-
 interface SectionHeaderProps {
   title: string;
   description?: string;
@@ -7,9 +5,9 @@ interface SectionHeaderProps {
 
 export function SectionHeader({ title, description }: SectionHeaderProps) {
   return (
-    <div className={styles.sectionHeader}>
-      <h3 className={styles.sectionTitle}>{title}</h3>
-      {description && <p className={styles.sectionDesc}>{description}</p>}
+    <div className="mb-4">
+      <h3 className="text-base font-bold text-foreground m-0">{title}</h3>
+      {description && <p className="text-sm text-muted-foreground mt-1">{description}</p>}
     </div>
   );
 }
